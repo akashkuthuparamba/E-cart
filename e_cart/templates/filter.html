@@ -22,15 +22,15 @@
     <body id="body">
         <div class="container-fluid">
             <div class="row pt-3">
-                {% for y in data %}
-                {% for x in y.item.all %}
-                <div class="col-2">
-                    <img src="{{x.item_img.url }}" alt="pic" height="50%" width="100%" style="border-radius: 10%;filter: blur(.5px);">
-                    <h1 style="color: white;">{{x.item_name}}</h1>
-                    <h4 style="color: white;" >price:{{x.item_price}}</h4>
-                    <a href="/{{x.id}}" ><button class="btn" id="button" style="color: white;  border: 1px solid white;">details</button></a>
-                </div> 
-                {% endfor %}   
+                {% for x in data.item.all %}
+                    {% if x.item_price <= id %}
+                        <div class="col-2">
+                            <img src="{{x.item_img.url }}" alt="pic" height="50%" width="100%" style="border-radius: 10%;filter: blur(.5px);">
+                            <h1 style="color: white;">{{x.item_name}}</h1>
+                            <h4 style="color: white;" >price:{{x.item_price}}</h4>
+                            <a href="/{{x.id}}" ><button class="btn" id="button" style="color: white;  border: 1px solid white;">details</button></a>
+                        </div> 
+                {% endif %}   
                 {% endfor %}
             </div>
         </div>  

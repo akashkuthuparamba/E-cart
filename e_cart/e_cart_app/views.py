@@ -1,11 +1,12 @@
 from django.shortcuts import render,redirect
 from django.http import HttpResponse,HttpResponseRedirect
 from.forms import ItemForm,RegisterForm,DetailEditForm
-from.models import Item,UserDetails,Category
+from.models import Item,UserDetails,Category,PurchaseDetails,CartDetails,Review
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.conf import settings
+import datetime
 # Create your views here.
 
 
@@ -33,6 +34,19 @@ def list(request):
 
 def details(request,id):
     data=Item.objects.get(id=id)
+    print(type(data))
+    if request.method=="POST":
+        q=data.item_name
+        print(type(q))
+        item=data
+        message=request.POST['review']
+        date=datetime.datetime.now().date()
+        time=datetime.datetime.now().time()
+        user=request.user.username
+        details=Review.objects.create(message=message,date=date,time=time,name=user,item=item)
+        details.save()
+
+
 
     return render(request,'details.html',{"data":data})    
 
@@ -84,7 +98,9 @@ def logout_view(request):
 
 def buy_view(request,id):
     data=request.user
-    return render(request,'buy.html',{"data":data})
+    details=Item.objects.get(id=id)
+    
+    return render(request,'buy.html',{"data":data,"details":details})
 
 
 def edit_view(request,id):
@@ -106,8 +122,17 @@ def edit_view(request,id):
     return render(request,'edit.html',{"form":form})
 
 
-def success_view(request):
+def success_view(request,pk):
     user=request.user
+    details=Item.objects.get(pk=pk)
+    name=details.item_name
+    price=details.item_price
+    quantitie=details.quantitie
+    item=user
+    date=datetime.date.today()
+    purchase=PurchaseDetails.objects.create(name=name,price=price,quantitie=quantitie,item=user,date=date)
+    purchase.save()
+
     
     return render(request,'success.html',{"user":user})
 
@@ -122,7 +147,59 @@ def success_view(request):
 #     return render(request,'list.html')   
 
 def cate_view(request,name,pk):
+    print(pk)
     data=Category.objects.filter(pk=pk)
+    # query set aan kittunnnath athil group of object nd
+    print(data)
     return render(request,'cate.html',{"data":data})
 
-   
+
+
+def purchace_view(request):
+    user=request.user
+    data=UserDetails.objects.get(username=user)
+    print(data)
+
+    return render(request,"purchace.html",{"data":data})
+
+
+def user_view(request):
+    user=request.user
+    data=UserDetails.objects.get(username=user)
+    return render(request,'user.html',{"user":user,"data":data})
+
+
+
+def cart_view(request,pk):
+         
+    user=request.user
+    details=Item.objects.get(pk=pk)
+    name=details.item_name
+    price=details.item_price
+    quantitie=details.quantitie
+    user=user
+    date=datetime.date.today()
+    purchase=CartDetails.objects.create(name=name,price=price,quantitie=quantitie,item=user,date=date)
+    purchase.save()
+    data=UserDetails.objects.get(username=user)
+    return redirect('/cart_display/')
+
+
+
+def cart_display(request):
+    user=request.user.pk
+
+    data=UserDetails.objects.get(pk=user)
+    return render(request,'cart.html',{"data":data})
+
+
+def cart_delete(request,pk):
+    CartDetails.objects.get(pk=pk).delete()
+
+    return redirect('/cart_display/')
+
+
+def filter_view(request,pk,id):
+    data=Category.objects.get(pk=pk)
+
+    return render(request,'filter.html',{"data":data,"id":id}) 
